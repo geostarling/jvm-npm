@@ -16,14 +16,15 @@
 // Since we intend to use the Function constructor.
 /* jshint evil: true */
 
-module = (typeof module == 'undefined') ? {} :  module;
+var global = this;
+global.module = (typeof module == 'undefined') ? {} :  module;
 
 (function() {
   var System  = java.lang.System,
       Scanner = java.util.Scanner,
       File    = java.io.File;
 
-  NativeRequire = (typeof NativeRequire === 'undefined') ? {} : NativeRequire;
+  global.NativeRequire = (typeof NativeRequire === 'undefined') ? {} : NativeRequire;
   if (typeof require === 'function' && !NativeRequire.require) {
     NativeRequire.require = require;
   }
@@ -181,7 +182,7 @@ module = (typeof module == 'undefined') ? {} :  module;
   Require.debug = true;
   Require.cache = {};
   Require.extensions = {};
-  require = Require;
+  global.require = Require;
 
   module.exports = Module;
 
@@ -200,15 +201,15 @@ module = (typeof module == 'undefined') ? {} :  module;
   }
 
   function resolveAsDirectory(id, root) {
-    var base = [root, id].join('/'),
-        file = new File([base, 'package.json'].join('/'));
+    var base = [root, id].join('/');
+    var file = new File([base, 'package.json'].join('/'));
     if (file.exists()) {
       try {
-        var body = readFile(file.getCanonicalPath()),
-            package  = JSON.parse(body);
-        if (package.main) {
-          return (resolveAsFile(package.main, base) ||
-                  resolveAsDirectory(package.main, base));
+        var body = readFile(file.getCanonicalPath());
+        var pkg  = JSON.parse(body);
+        if (pkg.main) {
+          return (resolveAsFile(pkg.main, base) ||
+                  resolveAsDirectory(pkg.main, base));
         }
         // if no package.main exists, look for index.js
         return resolveAsFile('index.js', base);
